@@ -2,6 +2,7 @@ const { response } = require('express')
 const express = require('express')
 const morgan = require('morgan') //npm install morgan
 const app = express()
+const cors = require('cors')
 
 morgan.token('data', function(req, res) {
     if (req.method === 'POST'){
@@ -12,7 +13,7 @@ morgan.token('data', function(req, res) {
 })
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
-
+app.use(cors())
 app.use(express.json())
 
 let persons = [
@@ -43,6 +44,7 @@ app.get('/', (req, res) => {
   })
   
 app.get('/api/persons', (req, res) => {
+    console.log(persons)
     res.json(persons)
 })
 
@@ -63,11 +65,16 @@ app.get('/api/persons/:id', (req, res) => {
 
 app.delete('/api/persons/:id', (req,res) => {
     const id = Number(req.params.id)
-    const person = persons.find(person => id === person.id)
-    const personIndex = persons.indexOf(person)
-    //console.log(personIndex)
-    const newArray = persons.splice(0,personIndex, 1)
-    res.json(newArray)
+    console.log('ID:', id)
+    if (id !== undefined) {
+        const person = persons.find(person => id === person.id)
+        const personIndex = persons.indexOf(person)
+        const newArray = persons.splice(personIndex,1)
+        console.log(newArray)
+        res.json(newArray)
+    } else {
+        res.json(persons)
+    }
 })
 
 app.post('/api/persons', (req, res) => {
@@ -91,7 +98,7 @@ app.post('/api/persons', (req, res) => {
     }
 })
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
